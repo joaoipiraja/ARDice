@@ -19,18 +19,24 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Set the view's delegate
         sceneView.delegate = self
         
+        
+        let diceScene = SCNScene(named: "art.scnassets/dice.scn")!
+        
+        if let diceNode = diceScene.rootNode.childNode(withName: "Dice", recursively: true) {
+            diceNode.position = SCNVector3(x: 0, y: 0, z: -0.1)
+            sceneView.scene.rootNode.addChildNode(diceNode)
+        }
+        
+        /*
         let sphere = SCNSphere(radius: 0.2)
-        
-        
         let cube = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0.01)
-        
         
         let materialCube = SCNMaterial()
         materialCube.diffuse.contents = UIColor.red
         cube.materials = [materialCube]
-        
+
         let materialMoon = SCNMaterial()
-        materialMo.diffuse.contents = UIImage(named: "art.scnassets/moon_texture.jpg")
+        materialMoon.diffuse.contents = UIImage(named: "art.scnassets/moon_texture.jpg")
         sphere.materials = [materialMoon]
         
         
@@ -41,7 +47,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.scene.rootNode.addChildNode(node)
         sceneView.autoenablesDefaultLighting = true
         
-        
+        */
     }
     
     override func viewWillAppear(_ animated: Bool) {
