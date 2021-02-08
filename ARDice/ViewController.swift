@@ -12,6 +12,7 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
+    var diceArray = [SCNNode]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,7 +20,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Set the view's delegate
         sceneView.delegate = self
         
-        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
+        //self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
         /*
         let diceScene = SCNScene(named: "art.scnassets/dice.scn")!
@@ -85,9 +86,49 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
 */
     
+    func RollAll(){
+        
+        if !diceArray.isEmpty{
+            for dice in diceArray{
+                roll(dice:dice)
+            }
+        }
+       
+    }
+    
+    func roll(dice:SCNNode){
+        let randomX = Float(arc4random_uniform(4)+1)*(Float.pi/2)
+        let randomZ = Float(arc4random_uniform(4)+1)*(Float.pi/2)
+        
+        dice.runAction(
+            SCNAction.rotateBy(x: CGFloat(randomX * 5),
+                               y: 0,
+                               z: CGFloat(randomZ * 5),
+                               duration: 0.5)
+        )
+    }
+    
+    
+    @IBAction func rollAgain(_ sender: UIBarButtonItem) {
+        RollAll()
+    }
+    
+    override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
+        RollAll()
+    }
+    
+    @IBAction func removeDice(_ sender: UIBarButtonItem) {
+        if(!diceArray.isEmpty){
+            for dice in diceArray{
+                dice.removeFromParentNode()
+            }
+        }
+    }
+    
+    
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         if anchor is ARPlaneAnchor{
-            print("teste")
+           /* print("teste")
             let planeAnchor = anchor as! ARPlaneAnchor
             let plane = SCNPlane(width: CGFloat(planeAnchor.extent.x), height:  CGFloat(planeAnchor.extent.z))
             let planeNode = SCNNode()
@@ -97,12 +138,41 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             gridMaterial.diffuse.contents = UIImage(named: "art.scnassets/grid.png")
             plane.materials = [gridMaterial]
             planeNode.geometry = plane
-            node.addChildNode(planeNode)
-            
-            
-            
+            node.addChildNode(planeNode)*/
+
         }else{
             return
+        }
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        
+        if let touch = touches.first{
+            let touchLocation = touch.location(in: sceneView)
+            let results = sceneView.hitTest(touchLocation, types: .existingPlaneUsingExtent)//convert a 2D point to 3D
+            
+            if !results.isEmpty{
+                print("touched the plane")
+            }else{
+                print("touched somewhere else")
+            }
+                        
+            if let hitResult = results.first{
+                print(hitResult)
+                let diceScene = SCNScene(named: "art.scnassets/dice.scn")!;
+                if let diceNode = diceScene.rootNode.childNode(withName: "Dice", recursively: true){
+                    diceNode.position = SCNVector3(x: hitResult.worldTransform.columns.3.x,
+                                                   y: hitResult.worldTransform.columns.3.y + diceNode.boundingSphere.radius/100,
+                                                   z: hitResult.worldTransform.columns.3.z)
+                    
+                    diceArray.append(diceNode)
+                    sceneView.scene.rootNode.addChildNode(diceNode)
+                
+                }
+            }
+            
+            
         }
     }
     
